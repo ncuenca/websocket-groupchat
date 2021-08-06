@@ -62,6 +62,30 @@ class ChatUser {
     });
   }
 
+  /** /joke should send a joke to only the user
+   *
+   * */
+
+  handleJoke() {
+    this.send(JSON.stringify({
+      type: "note",
+      text: "Haha very funny joke"
+    }));
+  }
+
+  /** /members should send all members to only the user
+   *
+   * */
+
+  handleMembers() {
+    const members = [...this.room.members];
+    const text = members.map((member) => member.name).join(", ");
+    this.send(JSON.stringify({
+      type: "note",
+      text
+    }));
+  }
+
   /** Handle messages from client:
    *
    * @param jsonData {string} raw message data
@@ -76,7 +100,15 @@ class ChatUser {
     let msg = JSON.parse(jsonData);
 
     if (msg.type === "join") this.handleJoin(msg.name);
-    else if (msg.type === "chat") this.handleChat(msg.text);
+    else if (msg.type === "chat") {
+      if (msg.text === "/joke") {
+        this.handleJoke();
+      } else if (msg.text === "/members") {
+        this.handleMembers();
+      } else {
+        this.handleChat(msg.text);
+      }
+    }
     else throw new Error(`bad message: ${msg.type}`);
   }
 
