@@ -78,12 +78,42 @@ class ChatUser {
    * */
 
   handleMembers() {
+    console.log(this.room.members);
     const members = [...this.room.members];
     const text = members.map((member) => member.name).join(", ");
     this.send(JSON.stringify({
       type: "note",
-      text
+      text: `In room: ${text}`
     }));
+  }
+
+  /** Handles private message from one user to another
+   * Only the recipient of the message can see the message
+   */
+
+  handlePrivateMessage(text) {
+    const words = text.split(" ");
+    const name = words[1];
+    const msg = words.slice(2).join(" ");
+    const toUser = this.room.getMember(name);
+    
+    toUser.send(JSON.stringify({
+      type: "note",
+      text: `Private message from ${this.name}: ${msg}`
+    }));
+  }
+
+  /** Handles name change and broadcasts new name
+   * to the room
+   */
+
+  handleNameChange(newName) {
+    const oldName = this.name;
+    this.name = newName;
+    this.room.broadcast({
+      type: "note",
+      text: `${oldName} has changed his/her name to ${newName}`
+    })
   }
 
   /** Handle messages from client:
@@ -105,12 +135,17 @@ class ChatUser {
         this.handleJoke();
       } else if (msg.text === "/members") {
         this.handleMembers();
+      } else if (msg.text.split(" ")[0] === "/priv") {
+        this.handlePrivateMessage(msg.text);
+      } else if (msg.text.split(" ")[0] === "/name") {
+        this.handleNameChange(msg.text.split(" ")[1]);
       } else {
         this.handleChat(msg.text);
       }
     }
     else throw new Error(`bad message: ${msg.type}`);
   }
+
 
   /** Connection was closed: leave room, announce exit to others. */
 

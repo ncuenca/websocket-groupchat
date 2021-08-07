@@ -57,6 +57,23 @@ class Room {
     this.members.delete(member);
   }
 
+  /** Handle getting a specific member
+   *
+   * @return user
+   * */
+
+  getMember(member) {
+    console.debug("getMember")
+    const members = [...this.members];
+    for (let m of members) {
+      if (m.name === member) {
+        return m;
+      }
+    }
+
+    // return instance of chatUser
+  }
+
   /** Send message to all members in a room.
    *
    * @param data {string} message to send
